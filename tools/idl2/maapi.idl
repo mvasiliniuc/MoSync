@@ -1554,6 +1554,12 @@ interface MAAPI {
 		* one of the \link #MA_NETWORK_UNKNOWN MA_NETWORK \endlink constants.
 		*/
 		NETWORK = 50;
+
+		/**
+		* \brief Used to notify when the image data created by maCameraSnapshot is ready.
+		* The events of this type contain the place holder for the image data and the image format.
+		*/
+		CAMERA_SNAPSHOT = 51;
 	}
 
 	/**
@@ -1730,6 +1736,20 @@ interface MAAPI {
 				*/
 				int imagePickerEncodingType;
 			} imagePicker;
+
+			struct {
+				/**
+				 * Used in #EVENT_TYPE_CAMERA_SNAPSHOT events.
+				 * Holds the place holder for the data object representing the camera shapshot.
+				 */
+				MAHandle snapshotImageHandle;
+
+				/**
+				 * Used in #EVENT_TYPE_CAMERA_SNAPSHOT events.
+				 * Holds the snapshot format that is specified when maCameraSnapshot is called.
+				 */
+				int snapshotFormatIndex;
+			} cameraSnapshot;
 
 			/**
 			* #EVENT_TYPE_OPTIONS_BOX_BUTTON_CLICKED event, contains the index of the selected option.
@@ -3800,6 +3820,10 @@ group CameraFunctions "Camera Functions" {
 		* Takes a snapshot using the specified format. The snapshot is
 		* stored as a new data object in the supplied placeholder.
 		* Returns 0 on success, or \< 0 on error.
+		*
+		* Note: Since MoSync 3.3 the usage of the value returned via placeholder is deprecated!
+		* Instead use the #EVENT_TYPE_CAMERA_SNAPSHOT event to obtain the place holder
+		* of the image data.
 		*/
 		int maCameraSnapshot(in int formatIndex, in MAHandle placeholder);
 
