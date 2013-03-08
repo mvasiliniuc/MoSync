@@ -1749,6 +1749,20 @@ interface MAAPI {
 				 * Holds the snapshot format that is specified when maCameraSnapshot is called.
 				 */
 				int snapshotFormatIndex;
+
+				/**
+				 * Used in #EVENT_TYPE_CAMERA_SNAPSHOT events.
+				 * Holds the snapshot data representation.
+				 * Possible values are found \link #MA_IMAGE_REPRESENTATION_UNKNOWN here \endlink.
+				 */
+				int snapshotImageDataRepresentation;
+
+				/**
+				 * Used in #EVENT_TYPE_CAMERA_SNAPSHOT events.
+				 * Holds the return code of the camera snapshot operation.
+				 * It #MA_CAMERA_RES_OK on success, or #MA_CAMERA_RES_FAILED on error
+				 */
+				int snapshotReturnCode;
 			} cameraSnapshot;
 
 			/**
@@ -3666,6 +3680,28 @@ group ImageFormat "Image Formats" {
 		RAW = "raw";
 
 	} //end MA_CAMERA_IMAGE_
+
+	constset int MA_IMAGE_REPRESENTATION_ {
+		/**
+		* @brief An integer constant that represents unknown image format.
+		*/
+		UNKNOWN = -1;
+
+		/**
+		* @brief An integer constant that represents RAW image format.
+		*/
+		RAW = 0;
+
+		/**
+		* @brief An integer constant that represents JPEG image format.
+		*/
+		JPEG = 1;
+
+		/**
+		* @brief An integer constant that represents PNG image format.
+		*/
+		PNG = 2;
+	} //end MA_IMAGE_REPRESENTATION_
 } //end ImageFormats
 
 group CameraProperties "Camera Properties" {
