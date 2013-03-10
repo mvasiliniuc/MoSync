@@ -1968,6 +1968,61 @@ namespace Base {
 		}
 	}
 
+    SYSCALL(int, maCameraSnapshotAsync(int formatIndex))
+	{
+		@try {
+			CameraInfo *info = getCurrentCameraInfo();
+            if (!info)
+            {
+                // Camera is not available.
+                return MA_CAMERA_RES_FAILED;
+            }
+
+			AVCaptureConnection *videoConnection =	[info->stillImageOutput.connections objectAtIndex:0];
+			if ([videoConnection isVideoOrientationSupported])
+			{
+				[videoConnection setVideoOrientation:UIDeviceOrientationPortrait];
+				if([UIDevice currentDevice].orientation == UIDeviceOrientationPortrait)
+					NSLog(@"video orientation is set to Portrait");
+			}
+
+            int placeholder = maCreatePlaceholder();
+
+            void (^captionCompletionHandler)(CMSampleBufferRef, NSError*) = ^(CMSampleBufferRef imageDataSampleBuffer, NSError *error) {
+                MAEvent event;
+                event.type = EVENT_TYPE_CAMERA_SNAPSHOT;
+                event.snapshotImageHandle = 0;
+                event.snapshotFormatIndex = 0;
+                event.snapshotImageDataRepresentation = MA_IMAGE_REPRESENTATION_JPEG;
+                event.snapshotReturnCode = MA_CAMERA_RES_OK;
+
+                if ( (NULL != imageDataSampleBuffer) && (NULL == error)) {
+                    NSData *imageData = [AVCaptureStillImageOutput jpegStillImageNSDataRepresentation:imageDataSampleBuffer];
+                    MemStream *stream = new MemStream([imageData length]);
+
+                    stream->write([imageData bytes],[imageData length]);
+                    gSyscall->resources.add_RT_BINARY(placeholder, stream);
+
+                    event.snapshotImageHandle = placeholder;
+                    event.snapshotFormatIndex = formatIndex;
+                }
+                else
+                {
+                    event.snapshotImageDataRepresentation = MA_IMAGE_REPRESENTATION_UNKNOWN;
+                    event.snapshotReturnCode = MA_CAMERA_RES_FAILED;
+                }
+                Base::gEventQueue.put(event);
+            };
+
+			[info->stillImageOutput captureStillImageAsynchronouslyFromConnection:videoConnection
+                                                                completionHandler:captionCompletionHandler];
+			return 1;
+		}
+		@catch (NSException * e) {
+			return -1;
+		}
+	}
+
 	SYSCALL(int, maCameraRecord(int stopStartFlag))
 	{
 		return -1;
@@ -2412,6 +2467,7 @@ namespace Base {
 		maIOCtl_case(maCameraSelect);
 		maIOCtl_case(maCameraNumber);
 		maIOCtl_case(maCameraSnapshot);
+        maIOCtl_case(maCameraSnapshotAsync);
 		maIOCtl_case(maCameraRecord);
 		maIOCtl_case(maCameraSetProperty);
 		maIOCtl_case(maCameraGetProperty);
