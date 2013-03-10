@@ -118,6 +118,7 @@ import com.mosync.internal.android.nfc.MoSyncNFC;
 import com.mosync.internal.android.nfc.MoSyncNFCService;
 import com.mosync.internal.generated.IX_OPENGL_ES;
 import com.mosync.internal.generated.IX_WIDGET;
+import com.mosync.internal.generated.MAAPI_consts;
 import com.mosync.java.android.MoSync;
 import com.mosync.java.android.MoSyncPanicDialog;
 import com.mosync.java.android.MoSyncService;
@@ -4638,6 +4639,23 @@ public class MoSyncThread extends Thread
 		}
 
 		return mMoSyncCameraController.cameraSnapshot(formatIndex, placeHolder);
+	}
+
+	/**
+	 * Takes a snapshot and sens the place holder created via
+	 * #EVENT_TYPE_CAMERA_SNAPSHOT.
+	 *
+	 * @param formatIndex index of the format set by the user
+	 * @return <0 if fails and >0 if succeeds
+	 */
+	int maCameraSnapshotAsync(int formatIndex)
+	{
+		if(mMoSyncCameraController == null)
+		{
+			return IOCTL_UNAVAILABLE;
+		}
+		mMoSyncCameraController.cameraSnapshotAsync(formatIndex);
+		return MAAPI_consts.MA_CAMERA_RES_OK;
 	}
 
 

@@ -2,6 +2,8 @@ package com.mosync.internal.android;
 
 import static com.mosync.internal.android.MoSyncHelpers.EXTENT;
 import static com.mosync.internal.android.MoSyncHelpers.SYSLOG;
+import static com.mosync.internal.generated.MAAPI_consts.EVENT_TYPE_CAPTURE;
+import static com.mosync.internal.generated.MAAPI_consts.EVENT_TYPE_WIDGET;
 
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
@@ -22,6 +24,7 @@ import java.lang.Thread;
 import android.os.Build;
 import android.util.Log;
 
+import com.mosync.internal.generated.IX_WIDGET;
 import com.mosync.internal.generated.MAAPI_consts;
 import com.mosync.nativeui.ui.widgets.MoSyncCameraPreview;
 
@@ -447,6 +450,16 @@ public class MoSyncCameraController {
 		}
 	}
 
+	public void cameraSnapshotAsync(int formatIndex)
+	{
+		if(formatIndex >= 0)
+		{
+			setNewSize(formatIndex);
+		}
+		mPreview.mCamera.takePicture(null,
+				rawCallbackWithEventSupport, jpegCallbackWithEventSupport);
+	}
+
 	private Camera.Parameters getCurrentParameters()
 	{
 		return mCameraParametersList.get(mCurrentCameraIndex);
@@ -714,6 +727,44 @@ public class MoSyncCameraController {
 	};
 
 	/**
+	 * Handles data for raw picture
+	 */
+	PictureCallback rawCallbackWithEventSupport = new PictureCallback() {
+		@Override
+		public void onPictureTaken(byte[] data, Camera camera) {
+			if(rawMode == true)
+			{
+				int snapshotImageHandle = 0;
+				int snapshotFormatIndex = 0;
+				int snapshotImageDataRepresentation = MAAPI_consts.MA_IMAGE_REPRESENTATION_RAW;
+				int snapshotReturnCode = MAAPI_consts.MA_CAMERA_RES_OK;
+
+				lock.lock();
+				try {
+					snapshotImageHandle = mMoSyncThread.nativeCreatePlaceholder();
+					mMoSyncThread.nativeCreateBinaryResource(snapshotImageHandle, data.length);
+					ByteBuffer byteBuffer = mMoSyncThread.mBinaryResources.get(snapshotImageHandle);
+					byteBuffer.put(data);
+
+					Camera.Parameters parameters = getCurrentParameters();
+					snapshotFormatIndex = parameters.getPictureFormat();
+				}
+				catch (Exception e) {
+					SYSLOG("Failed to create the data pool");
+
+					snapshotImageDataRepresentation = MAAPI_consts.MA_IMAGE_REPRESENTATION_UNKNOWN;
+					snapshotReturnCode = MAAPI_consts.MA_CAMERA_RES_FAILED;
+				}
+				finally {
+					lock.unlock();
+					postCameraSnapshotEvent(snapshotImageHandle, snapshotFormatIndex,
+							snapshotImageDataRepresentation, snapshotReturnCode);
+				}
+			}
+		}
+	};
+
+	/**
 	 * Handles data for jpeg picture
 	 */
 	PictureCallback jpegCallback = new PictureCallback() {
@@ -738,6 +789,67 @@ public class MoSyncCameraController {
 			}
 		}
 	};
+
+	/**
+	 * Handles data for jpeg picture
+	 */
+	PictureCallback jpegCallbackWithEventSupport = new PictureCallback() {
+		@Override
+		public void onPictureTaken(byte[] data, Camera camera) {
+			if(rawMode == false)
+			{
+				int snapshotImageHandle = 0;
+				int snapshotFormatIndex = 0;
+				int snapshotImageDataRepresentation = MAAPI_consts.MA_IMAGE_REPRESENTATION_JPEG;
+				int snapshotReturnCode = MAAPI_consts.MA_CAMERA_RES_OK;
+
+				lock.lock();
+				try {
+					snapshotImageHandle = mMoSyncThread.nativeCreatePlaceholder();
+					mMoSyncThread.nativeCreateBinaryResource(snapshotImageHandle, data.length);
+					ByteBuffer byteBuffer = mMoSyncThread.mBinaryResources.get(snapshotImageHandle);
+					byteBuffer.put(data);
+
+					Camera.Parameters parameters = getCurrentParameters();
+					snapshotFormatIndex = parameters.getPictureFormat();
+				}
+				catch (Exception e) {
+					SYSLOG("Failed to create the data pool");
+
+					snapshotImageDataRepresentation = MAAPI_consts.MA_IMAGE_REPRESENTATION_UNKNOWN;
+					snapshotReturnCode = MAAPI_consts.MA_CAMERA_RES_FAILED;
+				}
+				finally {
+					lock.unlock();
+					postCameraSnapshotEvent(snapshotImageHandle, snapshotFormatIndex,
+							snapshotImageDataRepresentation, snapshotReturnCode);
+				}
+			}
+		}
+	};
+
+	/**
+	 * Post a message to the MoSync event queue.
+	 * Send the data of the snapshot.
+	 * @param snapshotImageHandle Holds the place holder for the data object representing the camera snapshot.
+	 * @param snapshotFormatIndex Holds the snapshot format that is specified when maCameraSnapshot is called.
+	 * @param snapshotImageDataRepresentation Holds the snapshot data representation.
+	 * @param snapshotReturnCode Holds the return code of the camera snapshot operation.
+	 */
+	private void postCameraSnapshotEvent(
+			int snapshotImageHandle,
+			int snapshotFormatIndex,
+			int snapshotImageDataRepresentation,
+			int snapshotReturnCode)
+	{
+		int[] event = new int[5];
+		event[0] = MAAPI_consts.EVENT_TYPE_CAMERA_SNAPSHOT;
+		event[1] = snapshotImageHandle;
+		event[2] = snapshotFormatIndex;
+		event[3] = snapshotImageDataRepresentation;
+		event[4] = snapshotReturnCode;
+		mMoSyncThread.postEvent(event);
+	}
 
 	/**
 	 * Handles the preview callbacks, which is fired everytime the camera has a new preview
