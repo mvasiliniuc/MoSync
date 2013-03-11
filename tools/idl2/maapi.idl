@@ -1555,7 +1555,7 @@ interface MAAPI {
 		*/
 		NETWORK = 50;
 
-		* \brief Used to notify when the snapshot taken via #maCameraSnapshotAsync,
+		/** \brief Used to notify when the snapshot taken via #maCameraSnapshotAsync,
 		* is completed.
 		* The events of this type contain the place holder for the image data,
 		* the image format index, the \link #MA_IMAGE_REPRESENTATION_UNKNOWN data representation \endlink
