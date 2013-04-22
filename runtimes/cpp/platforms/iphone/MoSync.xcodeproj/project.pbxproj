@@ -18,6 +18,9 @@
 		4142402714766C03006977A1 /* MoSyncDB.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4142402414766C03006977A1 /* MoSyncDB.cpp */; };
 		4142402814766C03006977A1 /* MoSyncDB.h in Headers */ = {isa = PBXBuildFile; fileRef = 4142402514766C03006977A1 /* MoSyncDB.h */; };
 		41804802147E91050048FB95 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 41804801147E91050048FB95 /* SystemConfiguration.framework */; };
+		41B0448C1725773A009E11A7 /* StreamPreviewWidget.h in Headers */ = {isa = PBXBuildFile; fileRef = 41B0448A1725773A009E11A7 /* StreamPreviewWidget.h */; };
+		41B0448D1725773A009E11A7 /* StreamPreviewWidget.mm in Sources */ = {isa = PBXBuildFile; fileRef = 41B0448B1725773A009E11A7 /* StreamPreviewWidget.mm */; };
+		41B0448E1725773A009E11A7 /* StreamPreviewWidget.mm in Sources */ = {isa = PBXBuildFile; fileRef = 41B0448B1725773A009E11A7 /* StreamPreviewWidget.mm */; };
 		41EB03E4146A69BF0088E3A4 /* libsqlite3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 41EB03E3146A69BF0088E3A4 /* libsqlite3.dylib */; };
 		4300E3E8152C611100B40FA2 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4300E3E6152C60FA00B40FA2 /* StoreKit.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		4300E3E9152C611900B40FA2 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4300E3E6152C60FA00B40FA2 /* StoreKit.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
@@ -485,6 +488,8 @@
 		4142402414766C03006977A1 /* MoSyncDB.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MoSyncDB.cpp; path = ../../base/MoSyncDB.cpp; sourceTree = SOURCE_ROOT; };
 		4142402514766C03006977A1 /* MoSyncDB.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MoSyncDB.h; path = ../../base/MoSyncDB.h; sourceTree = SOURCE_ROOT; };
 		41804801147E91050048FB95 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
+		41B0448A1725773A009E11A7 /* StreamPreviewWidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = StreamPreviewWidget.h; path = NativeUI/Widgets/StreamPreviewWidget.h; sourceTree = "<group>"; };
+		41B0448B1725773A009E11A7 /* StreamPreviewWidget.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = StreamPreviewWidget.mm; path = NativeUI/Widgets/StreamPreviewWidget.mm; sourceTree = "<group>"; };
 		41EB03E3146A69BF0088E3A4 /* libsqlite3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.dylib; path = /usr/lib/libsqlite3.dylib; sourceTree = "<absolute>"; };
 		4300E3E6152C60FA00B40FA2 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		431869A713F68E560051D97A /* AddressBook.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AddressBook.framework; path = System/Library/Frameworks/AddressBook.framework; sourceTree = SDKROOT; };
@@ -1125,6 +1130,8 @@
 		43F36EE015B45BF00095B3C6 /* Widgets */ = {
 			isa = PBXGroup;
 			children = (
+				41B0448A1725773A009E11A7 /* StreamPreviewWidget.h */,
+				41B0448B1725773A009E11A7 /* StreamPreviewWidget.mm */,
 				43F36F2915B45D5B0095B3C6 /* ActivityIndicatorWidget.h */,
 				43F36F2A15B45D5B0095B3C6 /* ActivityIndicatorWidget.mm */,
 				43F36F2B15B45D5B0095B3C6 /* ButtonWidget.h */,
@@ -1755,6 +1762,7 @@
 				D99A5A2316C2BDBC000C6649 /* MoSyncFonts.h in Headers */,
 				D962D8D316C914E300B566B1 /* MoSyncUIUtils.h in Headers */,
 				8BB4799116FAFA390068D6BB /* MoSyncUIAlertView.h in Headers */,
+				41B0448C1725773A009E11A7 /* StreamPreviewWidget.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2015,6 +2023,7 @@
 				D962D8D016C914D100B566B1 /* MoSyncUIUtils.mm in Sources */,
 				8BB4799216FAFA390068D6BB /* MoSyncUIAlertView.mm in Sources */,
 				D933383517255A16002BBF02 /* CameraStreamingServer.m in Sources */,
+				41B0448D1725773A009E11A7 /* StreamPreviewWidget.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2159,6 +2168,7 @@
 				D99A5A2516C2BDBC000C6649 /* MoSyncFonts.mm in Sources */,
 				D962D8D116C914D100B566B1 /* MoSyncUIUtils.mm in Sources */,
 				8BB4799316FAFA390068D6BB /* MoSyncUIAlertView.mm in Sources */,
+				41B0448E1725773A009E11A7 /* StreamPreviewWidget.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
