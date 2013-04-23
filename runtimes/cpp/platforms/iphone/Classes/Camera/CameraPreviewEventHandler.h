@@ -19,6 +19,7 @@
 #import <Foundation/Foundation.h>
 
 #include <helpers/cpp_defs.h>
+#include "CameraStreamingServer.h"
 
 //This delegate is needed for capturing video frame data from the camera, when using the maCameraPreview* syscalls
 //It is also used as an observer for the "adjustingFocus"-property of the camera.
@@ -47,5 +48,9 @@
 - (void)setPreviewArea:(MARect)previewArea;
 @property void* previewBuf;
 @property MARect previewArea;
+
+-(void)sendImageToCameraServer:(CMSampleBufferRef)sampleBuffer;
+
+@property(nonatomic, retain) CameraStreamingServer* mCameraStreamingServer;
 
 @end
