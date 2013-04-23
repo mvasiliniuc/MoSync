@@ -53,6 +53,7 @@ MA 02110-1301, USA.
 #include "GLViewListener.h"
 #include "HorizontalLayout.h"
 #include "Image.h"
+#include "StreamPreview.h"
 #include "ImageButton.h"
 #include "Label.h"
 #include "ListView.h"

@@ -18,13 +18,15 @@
 #import <Foundation/Foundation.h>
 #import "IWidget.h"
 
-@interface StreamPreviewImage : IWidget
+@interface StreamPreviewWidget : IWidget <NSStreamDelegate>
 {
 	UIImageView* _imageView;
 	int _leftCapWidth;
 	int _topCapHeight;
+
     NSInputStream *_inputStream;
     NSString * _address;
+
     int _port;
     BOOL _readLength;
 	int	 _dataLength;

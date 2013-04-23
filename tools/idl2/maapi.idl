@@ -3640,6 +3640,7 @@ group WidgetAPI "Widget API" {
 #include "NativeUI/RelativeLayout.idl"
 #include "NativeUI/Screen.idl"
 #include "NativeUI/ScreenTransition.idl"
+#include "NativeUI/StreamPreview.idl"
 #include "NativeUI/SearchBar.idl"
 #include "NativeUI/Slider.idl"
 #include "NativeUI/StackScreen.idl"

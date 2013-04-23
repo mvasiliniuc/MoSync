@@ -1,0 +1,10 @@
+group WidgetStreamPreviewProperties "StreamPreview" {
+	constset MAString MAW_STREAM_PREVIEW_ {
+
+		ADDR = "streamingServerAddress";
+
+		PORT = "streamingServerPort";
+
+		ENABLED = "streamEnabled";
+	}
+}

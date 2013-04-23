@@ -44,6 +44,8 @@
 }
 
 - (void)dealloc{
+    [_mCameraStreamingServer stopCameraStreamingServer];
+    [_mCameraStreamingServer release];
     dispatch_release(mSerialQueue); //release dispatch queue
     //no [super dealloc]; on delegates
 }

@@ -26,7 +26,7 @@
 /**
  * Hidden functions/methods for StreamPreviewImage class.
  */
-@interface StreamPreviewImage ()
+@interface StreamPreviewWidget ()
 
 
 
@@ -42,7 +42,7 @@
 
 @end
 
-@implementation StreamPreviewImage
+@implementation StreamPreviewWidget
 
 
 - (id)init
@@ -76,7 +76,15 @@
 {
     if([key isEqualToString:@"streamingServerAddress"])
     {
-		_address = value;
+        NSLog(@"value: %@", _address);
+        NSLog(@"value: %@", value);
+        if (_address)
+        {
+            [_address release];
+            _address = nil;
+        }
+        _address = [[NSString alloc] initWithString:value];
+        NSLog(@"value: %@", _address);
 	}
     else if([key isEqualToString:@"streamingServerPort"])
     {
@@ -84,15 +92,22 @@
 	}
     else if([key isEqualToString:@"streamEnabled"])
     {
-        if ([value isEqualToString:@"true"]) {
-            CFReadStreamRef readStream;
-            CFWriteStreamRef writeStream;
-            CFStreamCreatePairWithSocketToHost(NULL, (CFStringRef)_address, _port, &readStream, &writeStream);
-            _inputStream = (__bridge_transfer NSInputStream *)readStream;
-            [_inputStream setDelegate:self];
-            [_inputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-            [_inputStream open];
-            [self layout];
+        if ([value isEqualToString:@"true"])
+        {
+            if ( [_address length] > 0 )
+            {
+                CFReadStreamRef readStream;
+                CFWriteStreamRef writeStream;
+
+                CFStreamCreatePairWithSocketToHost(NULL, (CFStringRef)_address, _port, &readStream, &writeStream);
+                _inputStream = (NSInputStream*)readStream;
+                [_inputStream setDelegate:self];
+
+                [[NSOperationQueue mainQueue] addOperationWithBlock:^ {
+                    [_inputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+                    [_inputStream open];
+                }];
+            }
         }
         else
         {
@@ -185,6 +200,30 @@
     [super dealloc];
 }
 
+- (NSArray *)splitTransferredPackets:(NSData*)currentData andLeftover:(NSData **)leftover {
+	NSMutableArray *ret = [NSMutableArray array];
+	const unsigned char *beginning = (const unsigned char*)[currentData bytes];
+	const unsigned char *offset = (const unsigned char*)[currentData bytes];
+	NSInteger bytesEnd = (NSInteger)offset + [currentData length];
+	while ((NSInteger)offset < bytesEnd) {
+		uint64_t dataSize[1];
+		NSInteger dataSizeStart = offset - beginning;
+		NSInteger dataStart = dataSizeStart + sizeof(uint64_t);
+		NSRange headerRange = NSMakeRange(dataSizeStart, sizeof(uint64_t));
+		[currentData getBytes:dataSize range:headerRange];
+		if ((dataStart + dataSize[0] + (NSInteger)offset) > bytesEnd) {
+			NSInteger lengthOfRemainingData = [currentData length] - dataSizeStart;
+			NSRange dataRange = NSMakeRange(dataSizeStart, lengthOfRemainingData);
+			*leftover = [currentData subdataWithRange:dataRange];
+			return ret;
+		}
+		NSRange dataRange = NSMakeRange(dataStart, dataSize[0]);
+		NSData *parsedData = [currentData subdataWithRange:dataRange];
+		[ret addObject:parsedData];
+		offset = offset + dataSize[0] + sizeof(uint64_t);
+	}
+	return ret;
+}
 
 - (void) stream:(NSStream *)stream handleEvent:(NSStreamEvent)eventCode
 {
@@ -205,44 +244,48 @@
 						mReadLeftover = nil;
 					}
 
-					NSInteger bytesRead;
+                    NSInteger bytesRead;
 					static uint8_t buffer[BUFFERSIZE];
 
 					bytesRead = [_inputStream read:buffer maxLength:BUFFERSIZE];
-					if (bytesRead == -1) {
-						NSLog(@"Something wrong here");
+					if (bytesRead == -1)
+                    {
+						NSLog(@"Error");
 						return;
-					} else if (bytesRead > 0){
+					}
+                    else if (bytesRead > 0)
+                    {
 						[data appendBytes:buffer length:bytesRead];
-						NSArray *dataPackets = [data splitTransferredPackets:&mReadLeftover];
-						if (mReadLeftover) {
+
+						NSArray *dataPackets = [self splitTransferredPackets:data andLeftover:&mReadLeftover];
+						if (mReadLeftover)
+                        {
 							[mReadLeftover retain];
 						}
-						for (NSData *onePacketData in dataPackets) {
-							UIImage *image = [UIImage imageWithData:onePacketData];
-							if (image) {
 
+						for (NSData *onePacketData in dataPackets)
+                        {
+							UIImage *image = [UIImage imageWithData:onePacketData];
+							if (image)
+                            {
 								[_imageView setImage:image];
-                                //TODO make sure we need this
-                                [image release];
 							}
 						}
 					}
-
 				}
 			}
 			break;
 		}
 		case NSStreamEventErrorOccurred:
 		{
-			NSLog(@"%s", _cmd);
+			//NSLog(@"%s", _cmd);
 			break;
 		}
 
 		case NSStreamEventEndEncountered:
 		{
 			UIAlertView	*alertView;
-			alertView = [[UIAlertView alloc] initWithTitle:@"Peer Disconnected!" message:nil delegate:self cancelButtonTitle:nil otherButtonTitles:@"Continue", nil];
+			alertView = [[UIAlertView alloc] initWithTitle:@"Service Disconnected!" message:nil delegate:self cancelButtonTitle:nil otherButtonTitles:@"Continue", nil];
 			[alertView show];
 			[alertView release];
 
