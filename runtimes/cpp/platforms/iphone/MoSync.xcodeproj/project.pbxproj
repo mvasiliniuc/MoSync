@@ -442,7 +442,7 @@
 		8BB4799116FAFA390068D6BB /* MoSyncUIAlertView.h in Headers */ = {isa = PBXBuildFile; fileRef = 8BB4798F16FAFA390068D6BB /* MoSyncUIAlertView.h */; };
 		8BB4799216FAFA390068D6BB /* MoSyncUIAlertView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 8BB4799016FAFA390068D6BB /* MoSyncUIAlertView.mm */; };
 		8BB4799316FAFA390068D6BB /* MoSyncUIAlertView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 8BB4799016FAFA390068D6BB /* MoSyncUIAlertView.mm */; };
-		D933383517255A16002BBF02 /* CameraStreamingServer.m in Sources */ = {isa = PBXBuildFile; fileRef = D933383417255A15002BBF02 /* CameraStreamingServer.m */; };
+		D933383517255A16002BBF02 /* CameraStreamingServer.mm in Sources */ = {isa = PBXBuildFile; fileRef = D933383417255A15002BBF02 /* CameraStreamingServer.mm */; };
 		D962D8D016C914D100B566B1 /* MoSyncUIUtils.mm in Sources */ = {isa = PBXBuildFile; fileRef = D962D8CF16C914D100B566B1 /* MoSyncUIUtils.mm */; };
 		D962D8D116C914D100B566B1 /* MoSyncUIUtils.mm in Sources */ = {isa = PBXBuildFile; fileRef = D962D8CF16C914D100B566B1 /* MoSyncUIUtils.mm */; };
 		D962D8D316C914E300B566B1 /* MoSyncUIUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = D962D8D216C914E300B566B1 /* MoSyncUIUtils.h */; };
@@ -812,7 +812,7 @@
 		8BB4799016FAFA390068D6BB /* MoSyncUIAlertView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = MoSyncUIAlertView.mm; path = UIUtils/MoSyncUIAlertView.mm; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* MoSync-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "MoSync-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = "<group>"; };
 		D933383317255A15002BBF02 /* CameraStreamingServer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CameraStreamingServer.h; path = Camera/CameraStreamingServer.h; sourceTree = "<group>"; };
-		D933383417255A15002BBF02 /* CameraStreamingServer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CameraStreamingServer.m; path = Camera/CameraStreamingServer.m; sourceTree = "<group>"; };
+		D933383417255A15002BBF02 /* CameraStreamingServer.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = CameraStreamingServer.mm; path = Camera/CameraStreamingServer.mm; sourceTree = "<group>"; };
 		D962D8CF16C914D100B566B1 /* MoSyncUIUtils.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = MoSyncUIUtils.mm; path = UIUtils/MoSyncUIUtils.mm; sourceTree = "<group>"; };
 		D962D8D216C914E300B566B1 /* MoSyncUIUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MoSyncUIUtils.h; path = UIUtils/MoSyncUIUtils.h; sourceTree = "<group>"; };
 		D99A59DC16C1B16B000C6649 /* MoSyncAds.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = MoSyncAds.h; path = ads/MoSyncAds.h; sourceTree = "<group>"; };
@@ -1276,7 +1276,7 @@
 				8B944BDA16C1179200E1B091 /* MoSyncCamera.h */,
 				8B944BDB16C1179200E1B091 /* MoSyncCamera.mm */,
 				D933383317255A15002BBF02 /* CameraStreamingServer.h */,
-				D933383417255A15002BBF02 /* CameraStreamingServer.m */,
+				D933383417255A15002BBF02 /* CameraStreamingServer.mm */,
 			);
 			name = Camera;
 			sourceTree = "<group>";
@@ -2022,7 +2022,7 @@
 				D99A5A2416C2BDBC000C6649 /* MoSyncFonts.mm in Sources */,
 				D962D8D016C914D100B566B1 /* MoSyncUIUtils.mm in Sources */,
 				8BB4799216FAFA390068D6BB /* MoSyncUIAlertView.mm in Sources */,
-				D933383517255A16002BBF02 /* CameraStreamingServer.m in Sources */,
+				D933383517255A16002BBF02 /* CameraStreamingServer.mm in Sources */,
 				41B0448D1725773A009E11A7 /* StreamPreviewWidget.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

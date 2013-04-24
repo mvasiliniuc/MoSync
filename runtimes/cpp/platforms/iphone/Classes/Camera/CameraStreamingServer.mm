@@ -12,6 +12,7 @@
 #include <netinet/in.h>
 
 #include <ifaddrs.h>
+#include <arpa/inet.h>
 
 @implementation CameraStreamingServer
 
@@ -188,19 +189,26 @@ static void CameraStreamingServerAcceptCallBack(CFSocketRef socket, CFSocketCall
 
 }
 
--(NSData *)contentsForTransfer:(NSArray*)array {
-	NSMutableData *ret = [NSMutableData data];
-	for (NSData *oneData in array) {
-		if (![oneData isKindOfClass:[NSData class]])
-        {
-            NSLog(@"contentsForTransfer error");
-            return nil;
+-(NSData *)contentsForTransfer:(NSArray*)array
+{
+    NSMutableData *ret = [NSMutableData data];
+    try {
+        for (NSData *oneData in array) {
+            if (![oneData isKindOfClass:[NSData class]])
+            {
+                NSLog(@"contentsForTransfer error");
+                return nil;
+            }
+            uint64_t dataSize[1];
+            dataSize[0] = [oneData length];
+            [ret appendBytes:dataSize length:sizeof(uint64_t)];
+            [ret appendBytes:[oneData bytes] length:[oneData length]];
         }
-		uint64_t dataSize[1];
-		dataSize[0] = [oneData length];
-		[ret appendBytes:dataSize length:sizeof(uint64_t)];
-		[ret appendBytes:[oneData bytes] length:[oneData length]];
-	}
+    }
+    catch (NSException* excep)
+    {
+        NSLog(@"contentsForTransfer exception");
+    }
 	return ret;
 }
 
@@ -219,7 +227,7 @@ static void CameraStreamingServerAcceptCallBack(CFSocketRef socket, CFSocketCall
     [packetQueue removeAllObjects];
 
     NSUInteger sendLength = [dataToSend length];
-    NSUInteger written = [_outStream write:[dataToSend bytes] maxLength:sendLength];
+    NSUInteger written = [_outStream write:(const uint8_t*)[dataToSend bytes] maxLength:sendLength];
 
     if (written == -1) {
         NSLog(@"writeData error");

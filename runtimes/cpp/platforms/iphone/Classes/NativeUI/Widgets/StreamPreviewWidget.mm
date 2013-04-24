@@ -76,15 +76,12 @@
 {
     if([key isEqualToString:@"streamingServerAddress"])
     {
-        NSLog(@"value: %@", _address);
-        NSLog(@"value: %@", value);
         if (_address)
         {
             [_address release];
             _address = nil;
         }
         _address = [[NSString alloc] initWithString:value];
-        NSLog(@"value: %@", _address);
 	}
     else if([key isEqualToString:@"streamingServerPort"])
     {
@@ -201,27 +198,36 @@
 }
 
 - (NSArray *)splitTransferredPackets:(NSData*)currentData andLeftover:(NSData **)leftover {
-	NSMutableArray *ret = [NSMutableArray array];
-	const unsigned char *beginning = (const unsigned char*)[currentData bytes];
-	const unsigned char *offset = (const unsigned char*)[currentData bytes];
-	NSInteger bytesEnd = (NSInteger)offset + [currentData length];
-	while ((NSInteger)offset < bytesEnd) {
-		uint64_t dataSize[1];
-		NSInteger dataSizeStart = offset - beginning;
-		NSInteger dataStart = dataSizeStart + sizeof(uint64_t);
-		NSRange headerRange = NSMakeRange(dataSizeStart, sizeof(uint64_t));
-		[currentData getBytes:dataSize range:headerRange];
-		if ((dataStart + dataSize[0] + (NSInteger)offset) > bytesEnd) {
-			NSInteger lengthOfRemainingData = [currentData length] - dataSizeStart;
-			NSRange dataRange = NSMakeRange(dataSizeStart, lengthOfRemainingData);
-			*leftover = [currentData subdataWithRange:dataRange];
-			return ret;
-		}
-		NSRange dataRange = NSMakeRange(dataStart, dataSize[0]);
-		NSData *parsedData = [currentData subdataWithRange:dataRange];
-		[ret addObject:parsedData];
-		offset = offset + dataSize[0] + sizeof(uint64_t);
-	}
+    NSMutableArray *ret = [NSMutableArray array];
+    try
+    {
+        const unsigned char *beginning = (const unsigned char*)[currentData bytes];
+        const unsigned char *offset = (const unsigned char*)[currentData bytes];
+        NSInteger bytesEnd = (NSInteger)offset + [currentData length];
+        while ((NSInteger)offset < bytesEnd)
+        {
+            uint64_t dataSize[1];
+            NSInteger dataSizeStart = offset - beginning;
+            NSInteger dataStart = dataSizeStart + sizeof(uint64_t);
+            NSRange headerRange = NSMakeRange(dataSizeStart, sizeof(uint64_t));
+            [currentData getBytes:dataSize range:headerRange];
+            if ((dataStart + dataSize[0] + (NSInteger)offset) > bytesEnd) {
+                NSInteger lengthOfRemainingData = [currentData length] - dataSizeStart;
+                NSRange dataRange = NSMakeRange(dataSizeStart, lengthOfRemainingData);
+                *leftover = [currentData subdataWithRange:dataRange];
+                return ret;
+            }
+            NSRange dataRange = NSMakeRange(dataStart, dataSize[0]);
+            NSData *parsedData = [currentData subdataWithRange:dataRange];
+            [ret addObject:parsedData];
+            offset = offset + dataSize[0] + sizeof(uint64_t);
+        }
+    }
+    catch (NSException *exception)
+    {
+        NSLog(@"splitTransferredPackets exception");
+        [ret removeAllObjects];
+    }
 	return ret;
 }
 
@@ -260,7 +266,7 @@
 						NSArray *dataPackets = [self splitTransferredPackets:data andLeftover:&mReadLeftover];
 						if (mReadLeftover)
                         {
-							[mReadLeftover retain];
+                            [mReadLeftover retain];
 						}
 
 						for (NSData *onePacketData in dataPackets)
