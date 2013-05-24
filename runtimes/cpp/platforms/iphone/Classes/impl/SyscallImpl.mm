@@ -70,6 +70,8 @@ namespace Base {
 	Syscall* gSyscall;
 
 	EventQueue gEventQueue;
+    InternalEventQueue gInternalEventQueue;
+
 	bool gEventOverflow = false;
 
 	int gVolume = -1;
@@ -183,9 +185,9 @@ namespace Base {
 	}
 
 
-	bool MAProcessEvents() //returns true if maWait should return
+	bool ProcessInternalEvents()
 	{
-		return false;
+        return Base::gInternalEventQueue.processEvents();
 	}
 
 	//***************************************************************************
@@ -406,8 +408,10 @@ namespace Base {
 
 } // namespace Base
 
-void EventQueue::handleInternalEvent(int type, void *e) {
-	if(type == IEVENT_TYPE_DEFLUX_BINARY) {
+void InternalEventQueue::handleInternalEvent(int type, void *e)
+{
+	if( type == IEVENT_TYPE_DEFLUX_BINARY )
+    {
 		InternalEventDefluxBin *d = (InternalEventDefluxBin*)e;
 		SYSCALL_THIS->resources.extract_RT_FLUX(d->handle);
 		ROOM(SYSCALL_THIS->resources.dadd_RT_BINARY(d->handle, d->stream));

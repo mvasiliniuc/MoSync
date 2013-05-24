@@ -130,6 +130,7 @@ int Downloader::cancelDownloading()
 	{
 		mDownloadListeners[i]->downloadCancelled(this);
 	}
+
 	return 1;
 }
 
@@ -570,11 +571,14 @@ void DownloaderReaderWithKnownContentLength::connRecvFinished(
 	// Have we got all data?
 	if ((mContentLength - mDataOffset) > 0)
 	{
-		// No we hav not, continue to read data.
-		conn->recvToData(
-			mDownloader->getDataPlaceholder(),
-			mDataOffset,
-			mContentLength - mDataOffset);
+		if ( mDownloader->isDownloading() )
+		{
+			// No we hav not, continue to read data.
+			conn->recvToData(
+				mDownloader->getDataPlaceholder(),
+				mDataOffset,
+				mContentLength - mDataOffset);
+		}
 	}
 	else
 	{
@@ -653,10 +657,13 @@ void DownloaderReaderThatReadsChunks::connRecvFinished(Connection* conn, int res
 
 	if (leftToRead > 0)
 	{
-		// Read more data into current chunk.
-		int currentChunkIndex = mDataChunks.size() - 1;
-		MAHandle chunk = mDataChunks[currentChunkIndex];
-		conn->recvToData(chunk, mDataChunkOffset, leftToRead);
+		if ( mDownloader->isDownloading() )
+		{
+			// Read more data into current chunk.
+			int currentChunkIndex = mDataChunks.size() - 1;
+			MAHandle chunk = mDataChunks[currentChunkIndex];
+			conn->recvToData(chunk, mDataChunkOffset, leftToRead);
+		}
 	}
 	else
 	{

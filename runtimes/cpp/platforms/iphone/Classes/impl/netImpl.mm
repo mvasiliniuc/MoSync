@@ -71,23 +71,19 @@ void MoSyncMutex::unlock() {
 //Helpers
 //***************************************************************************
 
-void ConnWaitEvent() {
-	Base::gEventQueue.wait(0);
+void ConnWaitForInternalEvents() {
+	Base::gInternalEventQueue.wait(0);
 }
 void ConnPushEvent(MAEvent* ep) {
-	//PostMessage(g_hwndMain, WM_ADD_EVENT, (WPARAM) ep, 0);
-	//DEBIG_PHAT_ERROR;
 	Base::gEventQueue.put(*ep);
 	delete ep;
 }
 
 void DefluxBinPushEvent(MAHandle handle, Stream& s) {
-	//PostMessage(g_hwndMain, WM_DEFLUX_BINARY, (WPARAM) &s, handle);
-//	DEBIG_PHAT_ERROR;
-	InternalEventDefluxBin* ie = new InternalEventDefluxBin;
-	ie->handle = handle;
-	ie->stream = (Stream*)&s;
-	Base::gEventQueue.addInternalEvent(IEVENT_TYPE_DEFLUX_BINARY, ie);
+    InternalEventDefluxBin* ie = new InternalEventDefluxBin;
+    ie->handle = handle;
+    ie->stream = (Stream*)&s;
+    Base::gInternalEventQueue.addInternalEvent(IEVENT_TYPE_DEFLUX_BINARY, ie);
 }
 
 //***************************************************************************

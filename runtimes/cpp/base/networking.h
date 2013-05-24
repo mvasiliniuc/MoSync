@@ -42,11 +42,14 @@ using namespace MoSyncError;
 //Implementation declarations
 //***************************************************************************
 
-void ConnWaitEvent();
+void ConnWaitForInternalEvents();
+
 void ConnPushEvent(MAEvent* ep);
+
 void DefluxBinPushEvent(MAHandle handle, Stream& s);
+
 namespace Base {
-	bool MAProcessEvents();
+	bool ProcessInternalEvents();
 }
 void MANetworkSslInit();
 void MANetworkSslClose();
@@ -91,7 +94,7 @@ struct MAConn {
 		while(true) {
 			gConnMutex.lock();
 			{
-				MAProcessEvents();
+				ProcessInternalEvents();
 				if(state == 0) {
 					gConnMutex.unlock();
 					break;
@@ -99,7 +102,7 @@ struct MAConn {
 			}
 			gConnMutex.unlock();
 
-			ConnWaitEvent();	//wait until there are events to be processed
+			ConnWaitForInternalEvents(); //wait until there are internal events to be processed
 		}
 	}
 

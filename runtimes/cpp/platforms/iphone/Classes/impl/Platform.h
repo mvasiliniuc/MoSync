@@ -105,7 +105,7 @@ public:
 				}
 			}
 		}
-        
+
 		if(noAlpha) {
 			mImageDrawer->alphaMask = 0;
 			mImageDrawer->alphaBits = 0;	
@@ -163,7 +163,7 @@ public:
 		CGContextSaveGState(context);
 		
 		createImageDrawer();
-        
+
 		if(bitmapInfo==kCGImageAlphaNoneSkipLast) {
 			mImageDrawer->alphaMask = 0;
 			mImageDrawer->alphaBits = 0;		
@@ -197,6 +197,7 @@ public:
 // Space left for other events.
 #define QUEUE_EVENT_FREE_SPACE 20
 
+
 class EventQueue : public CircularFifo<MAEvent, EVENT_BUFFER_SIZE> {
 public:
 	EventQueue() : CircularFifo<MAEvent, EVENT_BUFFER_SIZE>(), mEventOverflow(false), mWaiting(false) {
@@ -208,19 +209,18 @@ public:
 		pthread_cond_destroy(&mCond);
 		pthread_mutex_destroy(&mMutex);
 	}
-	
-	void handleInternalEvent(int type, void *e);
 
-	bool getAndProcess(MAEvent& event) {
-		if(count()==0) return false;
+	bool getAndProcess(MAEvent& event)
+    {
+		if( count()==0 )
+        {
+            return false;
+        }
+
 		MAEvent e = CircularFifo<MAEvent, EVENT_BUFFER_SIZE>::get();
-		if(e.type<0) {
-			handleInternalEvent(e.type, (void*)e.data);
-			return getAndProcess(event);
-		} else {
-			event = e;
-			return true;
-		}
+        event = e;
+
+        return true;
 	}
 
 	void put(const MAEvent& e) {
@@ -292,6 +292,64 @@ public:
 		event.type = EVENT_TYPE_CLOSE;
 		put(event);	
 	}
+
+private:
+	pthread_mutex_t mMutex;
+	pthread_cond_t mCond;
+
+	bool mEventOverflow;
+	bool mWaiting;
+};
+
+
+class InternalEventQueue : public CircularFifo<MAEvent, EVENT_BUFFER_SIZE>
+{
+public:
+	InternalEventQueue() :
+        CircularFifo<MAEvent, EVENT_BUFFER_SIZE>()
+    {
+		pthread_cond_init(&mInternalCond, NULL);
+		pthread_mutex_init(&mInternalMutex, NULL);
+	}
+
+	~InternalEventQueue()
+    {
+		pthread_cond_destroy(&mInternalCond);
+		pthread_mutex_destroy(&mInternalMutex);
+	}
+
+    void handleInternalEvent(int type, void *e);
+
+	bool processEvents()
+    {
+        if ( count() == 0 )
+        {
+            return false;
+        }
+		while ( count() > 0 )
+        {
+            MAEvent e = CircularFifo<MAEvent, EVENT_BUFFER_SIZE>::get();
+            handleInternalEvent(e.type, (void*)e.data);
+        }
+        return true;
+	}
+
+	void wait(int ms) {
+		pthread_mutex_lock(&mInternalMutex);
+		if(count()==0) {
+			if(ms>0) {
+				struct timeval now;
+				struct timespec timeout;
+				gettimeofday(&now, NULL);
+				timeout.tv_sec = now.tv_sec + (ms/1000);
+				timeout.tv_nsec = now.tv_usec * 1000 + (ms%1000)*1000000;
+				pthread_cond_timedwait(&mInternalCond, &mInternalMutex, &timeout);
+			} else {
+				pthread_cond_wait(&mInternalCond, &mInternalMutex);
+			}
+		}
+		pthread_mutex_unlock(&mInternalMutex);
+	}
 	
 	void addInternalEvent(int type, void* data) {
 		MAEvent event;
@@ -301,17 +359,23 @@ public:
 	}
 
 private:
-	pthread_mutex_t mMutex;
-	pthread_cond_t mCond;
+    void put(const MAEvent& e) {
+        CircularFifo<MAEvent, EVENT_BUFFER_SIZE>::put(e);
 
-	bool mEventOverflow;
-	bool mWaiting;
-	
+        pthread_mutex_lock(&mInternalMutex);
+        pthread_cond_signal(&mInternalCond);
+        pthread_mutex_unlock(&mInternalMutex);
+	}
+
+private:
+	pthread_mutex_t mInternalMutex;
+	pthread_cond_t mInternalCond;
 };
 
 namespace Base
 {
 	extern EventQueue gEventQueue;
+    extern InternalEventQueue gInternalEventQueue;
     extern bool gClosing;
     extern bool gEventOverflow;
 }

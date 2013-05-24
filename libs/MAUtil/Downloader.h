@@ -232,7 +232,7 @@ namespace MAUtil {
 		 * \return a boolean value, if true the function is currently
 		 * downloading otherwise it isn't.
 		 */
-		bool isDownloading() const { return mIsDownloading; }
+		virtual bool isDownloading() const { return mIsDownloading; }
 
 	protected:
 		/**
