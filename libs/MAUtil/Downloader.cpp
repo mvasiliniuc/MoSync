@@ -172,11 +172,6 @@ void Downloader::fireError(int code)
 
 void Downloader::closeConnection(int cleanup)
 {
-	if(mIsInsideReader) {
-		mIsCanceling = true;
-		return;
-	}
-
 	mConn->close();
 
 	deleteReader();
