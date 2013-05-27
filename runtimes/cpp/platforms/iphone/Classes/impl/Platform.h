@@ -213,15 +213,26 @@ public:
 
 	bool getAndProcess(MAEvent& event) {
 		if(count()==0) return false;
+
 		MAEvent e = CircularFifo<MAEvent, EVENT_BUFFER_SIZE>::get();
-		if(e.type<0) {
-			handleInternalEvent(e.type, (void*)e.data);
-			return getAndProcess(event);
-		} else {
-			event = e;
-			return true;
-		}
+        event = e;
+        return true;
+
 	}
+
+    bool processInternalEvents()
+    {
+        if ( count() == 0 )
+        {
+            return false;
+        }
+        while ( count() > 0 )
+        {
+            MAEvent e = CircularFifo<MAEvent, EVENT_BUFFER_SIZE>::get();
+            handleInternalEvent(e.type, (void*)e.data);
+        }
+        return true;
+    }
 
 	void put(const MAEvent& e) {
             CircularFifo<MAEvent, EVENT_BUFFER_SIZE>::put(e);
@@ -312,6 +323,7 @@ private:
 namespace Base
 {
 	extern EventQueue gEventQueue;
+    extern EventQueue gInternalEventQueue;
     extern bool gClosing;
     extern bool gEventOverflow;
 }

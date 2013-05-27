@@ -70,6 +70,7 @@ namespace Base {
 	Syscall* gSyscall;
 
 	EventQueue gEventQueue;
+    EventQueue gInternalEventQueue;
 	bool gEventOverflow = false;
 
 	int gVolume = -1;
@@ -185,7 +186,7 @@ namespace Base {
 
 	bool MAProcessEvents() //returns true if maWait should return
 	{
-		return false;
+		return Base::gInternalEventQueue.processInternalEvents();
 	}
 
 	//***************************************************************************
