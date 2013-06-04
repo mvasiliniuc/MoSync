@@ -105,7 +105,7 @@ public:
 				}
 			}
 		}
-        
+
 		if(noAlpha) {
 			mImageDrawer->alphaMask = 0;
 			mImageDrawer->alphaBits = 0;	
@@ -163,7 +163,7 @@ public:
 		CGContextSaveGState(context);
 		
 		createImageDrawer();
-        
+
 		if(bitmapInfo==kCGImageAlphaNoneSkipLast) {
 			mImageDrawer->alphaMask = 0;
 			mImageDrawer->alphaBits = 0;		
@@ -211,66 +211,92 @@ public:
 	
 	void handleInternalEvent(int type, void *e);
 
-	bool getAndProcess(MAEvent& event) {
-		if(count()==0) return false;
-		MAEvent e = CircularFifo<MAEvent, EVENT_BUFFER_SIZE>::get();
-		if(e.type<0) {
-			handleInternalEvent(e.type, (void*)e.data);
-			return getAndProcess(event);
-		} else {
-			event = e;
-			return true;
+	bool processAllEvents() {
+		pthread_mutex_lock(&mMutex);
+		if( count() == 0 )
+		{
+			pthread_mutex_unlock(&mMutex);
+			return false;
 		}
+
+		while ( count() > 0 )
+		{
+			MAEvent latestEvent = CircularFifo<MAEvent, EVENT_BUFFER_SIZE>::get();
+			if  (latestEvent.type < 0 )
+			{
+				handleInternalEvent(latestEvent.type, (void*)latestEvent.data);
+			}
+			else // Put in external event queue
+			{
+				externalEventQueue.put(latestEvent);
+			}
+		}
+		pthread_mutex_unlock(&mMutex);
+		return true;
 	}
 
 	void put(const MAEvent& e) {
-            CircularFifo<MAEvent, EVENT_BUFFER_SIZE>::put(e);
+		pthread_mutex_lock(&mMutex);
 
-            pthread_mutex_lock(&mMutex);
-            pthread_cond_signal(&mCond);
-            pthread_mutex_unlock(&mMutex);
+		CircularFifo<MAEvent, EVENT_BUFFER_SIZE>::put(e);
+
+		pthread_cond_signal(&mCond);
+		pthread_mutex_unlock(&mMutex);
 	}
 
-    /**
-     * Put event in queue only if there is free space.
-     * The event is ignored if there isn't enough free space.
-     * This method does not throw panic.
-     */
-    void putSafe(const MAEvent& e)
-    {
-        if (count() + QUEUE_EVENT_FREE_SPACE < EVENT_BUFFER_SIZE)
-        {
-            CircularFifo<MAEvent, EVENT_BUFFER_SIZE>::put(e);
-            pthread_mutex_lock(&mMutex);
-            pthread_cond_signal(&mCond);
-            pthread_mutex_unlock(&mMutex);
-        }
+	bool getExternalEvent(MAEvent& event) {
+		if ( externalEventQueue.count() == 0 )
+			return false;
+
+		event = externalEventQueue.get();
+		return true;
+	}
+
+	/**
+	 * Put event in queue only if there is free space.
+	 * The event is ignored if there isn't enough free space.
+	 * This method does not throw panic.
+	 */
+	void putSafe(const MAEvent& e) {
+		pthread_mutex_lock(&mMutex);
+		if (count() + QUEUE_EVENT_FREE_SPACE < EVENT_BUFFER_SIZE)
+		{
+			CircularFifo<MAEvent, EVENT_BUFFER_SIZE>::put(e);
+
+			pthread_cond_signal(&mCond);
+		}
+		pthread_mutex_unlock(&mMutex);
 	}
 
 	void wait(int ms) {
-		pthread_mutex_lock(&mMutex);
-		if(count()==0) {
-			if(ms>0) {
+		if( count() == 0 )
+		{
+            pthread_mutex_lock(&mMutex);
+			if( ms > 0)
+			{
 				struct timeval now;
-				struct timespec timeout;	
+				struct timespec timeout;
 				gettimeofday(&now, NULL);
 				timeout.tv_sec = now.tv_sec + (ms/1000);
-				timeout.tv_nsec = now.tv_usec * 1000 + (ms%1000)*1000000;				
+				timeout.tv_nsec = now.tv_usec * 1000 + (ms%1000)*1000000;
 				pthread_cond_timedwait(&mCond, &mMutex, &timeout);
-			} else {
+			}
+			else
+			{
 				pthread_cond_wait(&mCond, &mMutex);
 			}
+            pthread_mutex_unlock(&mMutex);
 		}
-		pthread_mutex_unlock(&mMutex);	
 	}
 
 	void addPointerEvent(int x, int y, int touchId, int type) {
 		if(!mEventOverflow) {
-			if(count() + 2 == EVENT_BUFFER_SIZE) {	//leave space for Close event
+			if(count() + 2 == EVENT_BUFFER_SIZE) {  //leave space for Close event
 				mEventOverflow = true;
 				clear();
 				LOG("EventBuffer overflow!\n");
 			}
+
 			/* put event in event queue */
 			MAEvent event;
 			event.type = type;
@@ -278,19 +304,19 @@ public:
 			event.point.y = y;
 			event.touchId = touchId;
 			put(event);
-		}		
+		}
 	}
-	
+
 	void addScreenChangedEvent() {
 		MAEvent event;
 		event.type = EVENT_TYPE_SCREEN_CHANGED;
-		put(event);	
+		put(event);
 	}
 	
 	void addCloseEvent() {
 		MAEvent event;
 		event.type = EVENT_TYPE_CLOSE;
-		put(event);	
+		put(event);
 	}
 	
 	void addInternalEvent(int type, void* data) {
@@ -299,7 +325,6 @@ public:
 		event.data = (int)data;
 		put(event);
 	}
-
 private:
 	pthread_mutex_t mMutex;
 	pthread_cond_t mCond;
@@ -307,13 +332,15 @@ private:
 	bool mEventOverflow;
 	bool mWaiting;
 	
+	CircularFifo<MAEvent, EVENT_BUFFER_SIZE> externalEventQueue;
 };
 
 namespace Base
 {
 	extern EventQueue gEventQueue;
-    extern bool gClosing;
-    extern bool gEventOverflow;
+
+	extern bool gClosing;
+	extern bool gEventOverflow;
 }
 
 #endif
